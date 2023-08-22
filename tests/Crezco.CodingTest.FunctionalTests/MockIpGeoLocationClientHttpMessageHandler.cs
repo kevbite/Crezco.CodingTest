@@ -12,6 +12,8 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
     {
         if (_handlers.FirstOrDefault(h => h.Match(request)) is { } handler)
         {
+            _handlers.Remove(handler);
+            
             return await handler.Resolve(request);
         }
 

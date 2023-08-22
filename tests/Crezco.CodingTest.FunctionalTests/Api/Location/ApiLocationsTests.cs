@@ -86,6 +86,34 @@ public sealed class ApiLocationsTests : IAsyncLifetime
         
         statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
+    
+    [Fact]
+    public async Task ShouldReturn200OkAndCorrectResponseBodyWhenIpLocationHasBeenPreviouslyCachedAndUpstreamSystemIsUnavailable()
+    {
+        var ip = RandomIpAddress.Next();
+        var countryCode2 = "PE";
+        var countryCode3 = "PER";
+        var countryName = "Peru";
+        var city = "Lima";
+
+        var json = new IpGeoLocationIpGeoJsonBuilder()
+            .AddIp(ip)
+            .AddCountry(countryCode2, countryCode3, countryName)
+            .AddCity(city)
+            .Build();
+        
+        _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json);
+        await _harness.GetLocation(ip);
+        _harness.IpGeoLocationClient.SeedFailedIpGeoHandler(ip, HttpStatusCode.ServiceUnavailable);
+
+        var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
+        
+        statusCode.Should().Be(HttpStatusCode.OK);
+        jsonDocument!.RootElement.GetProperty("countryCode2").GetString().Should().Be(countryCode2);
+        jsonDocument.RootElement.GetProperty("countryCode3").GetString().Should().Be(countryCode3);
+        jsonDocument.RootElement.GetProperty("countryName").GetString().Should().Be(countryName);
+        jsonDocument.RootElement.GetProperty("city").GetString().Should().Be(city);
+    }
 
     public Task InitializeAsync() => Task.CompletedTask;
 

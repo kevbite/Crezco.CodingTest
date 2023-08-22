@@ -4,6 +4,7 @@ using Crezco.CodingTest.Api.Location;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
+    .AddMongoDb()
     .AddMassTransit()
     .AddLocation();
 
