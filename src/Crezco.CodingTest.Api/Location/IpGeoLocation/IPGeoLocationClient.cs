@@ -16,7 +16,7 @@ public class IpGeoLocationClient
 
     public async Task<IpGeoLocationResponse> GetLocation(IPGeoLocationRequest request)
     {
-        var uri = $"/ipgeo?apiKey={_options.Value.ApiKey}";
+        var uri = $"/ipgeo?ip={request.IpAddress}&apiKey={_options.Value.ApiKey}";
 
         var geoResource = await _client.GetFromJsonAsync<IpGeoResource>(uri)
                           ?? throw new InvalidOperationException("Failed to get location");

@@ -23,17 +23,18 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
         _handlers.Add(new Handler(match, handler));
     }
 
-    public void AddIpGeoHandler(string factoryIpGeoLocationApiKey, string json)
+    public void AddIpGeoHandler(string apiKey, string ip, string json)
     {
         AddHandler(
             request => request.Method == HttpMethod.Get &&
                        request.RequestUri?.PathAndQuery.StartsWith("/ipgeo", StringComparison.Ordinal) == true &&
-                       request.RequestUri?.Query.Contains($"apiKey={factoryIpGeoLocationApiKey}") == true,
+                       request.RequestUri?.Query.Contains($"apiKey={apiKey}") == true &&
+                       request.RequestUri?.Query.Contains($"ip={ip}") == true,
             _ => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             });
     }
-    
+
     sealed record Handler(Func<HttpRequestMessage, bool> Match, Func<HttpRequestMessage, HttpResponseMessage> Resolve);
 }
