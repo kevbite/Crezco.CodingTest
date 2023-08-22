@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,11 +19,12 @@ public sealed class
         
         builder.ConfigureTestServices(services =>
         {
-            ServiceCollectionServiceExtensions.AddSingleton<MockIpGeoLocationClientHttpMessageHandler>(services);
-            OptionsServiceCollectionExtensions.Configure<HttpClientFactoryOptions>(services, "IpGeoLocationClient", options =>
+            services.AddSingleton<MockIpGeoLocationClientHttpMessageHandler>();
+            services.Configure<HttpClientFactoryOptions>("IpGeoLocationClient", options =>
             {
                 options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = ServiceProviderServiceExtensions.GetRequiredService<MockIpGeoLocationClientHttpMessageHandler>(b.Services));
             });
+            services.AddMassTransitTestHarness();
         });
         base.ConfigureWebHost(builder);
     }
