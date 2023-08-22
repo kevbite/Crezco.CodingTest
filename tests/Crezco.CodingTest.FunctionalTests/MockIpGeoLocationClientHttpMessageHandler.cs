@@ -23,17 +23,31 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
         _handlers.Add(new Handler(match, handler));
     }
 
-    public void AddIpGeoHandler(string apiKey, string ip, string json)
+    public void AddSuccessfulIpGeoHandler(string apiKey, string ip, string json)
+    {
+        AddIpGeoHandler(
+            apiKey, ip,
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+    }
+
+    public void AddFailedIpGeoHandler(string apiKey, string ip, HttpStatusCode httpStatusCode)
+    {
+        AddIpGeoHandler(
+            apiKey, ip,
+            _ => new HttpResponseMessage(httpStatusCode));
+    }
+
+    private void AddIpGeoHandler(string apiKey, string ip, Func<HttpRequestMessage, HttpResponseMessage> handler)
     {
         AddHandler(
             request => request.Method == HttpMethod.Get &&
                        request.RequestUri?.PathAndQuery.StartsWith("/ipgeo", StringComparison.Ordinal) == true &&
                        request.RequestUri?.Query.Contains($"apiKey={apiKey}") == true &&
                        request.RequestUri?.Query.Contains($"ip={ip}") == true,
-            _ => new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            });
+            handler);
     }
 
     sealed record Handler(Func<HttpRequestMessage, bool> Match, Func<HttpRequestMessage, HttpResponseMessage> Resolve);

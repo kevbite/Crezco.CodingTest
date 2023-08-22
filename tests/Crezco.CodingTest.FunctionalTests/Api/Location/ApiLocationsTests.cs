@@ -27,7 +27,7 @@ public sealed class ApiLocationsTests : IAsyncLifetime
             .AddCity(city)
             .Build();
         
-        _harness.IpGeoLocationClient.SeedIpGeoHandler(ip, json);
+        _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json);
 
         var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
         
@@ -52,6 +52,22 @@ public sealed class ApiLocationsTests : IAsyncLifetime
         jsonDocument.RootElement.GetProperty("title").GetString().Should().Be("Bad Request");
         jsonDocument.RootElement.GetProperty("status").GetInt32().Should().Be(400);
         jsonDocument.RootElement.GetProperty("detail").GetString().Should().Be("Invalid IP address");
+    }
+    
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.GatewayTimeout)]
+    public async Task ShouldReturn503ServiceUnavailableWhenUpstreamSystemIsUnavailable(HttpStatusCode upstreamSystemStatusCode)
+    {
+        var ip = RandomIpAddress.Next();
+
+        _harness.IpGeoLocationClient.SeedFailedIpGeoHandler(ip, upstreamSystemStatusCode);
+
+        var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
+        
+        statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
     public Task InitializeAsync() => Task.CompletedTask;

@@ -1,5 +1,6 @@
 ﻿using Crezco.CodingTest.Api.Location.IpGeoLocation;
 using MassTransit;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Crezco.CodingTest.Api.Location;
@@ -18,16 +19,25 @@ public static class LocationEndpoints
                     return Results.Problem("Invalid IP address", statusCode: 400);
                 }
 
-                var response =
-                    await client.GetResponse<GetIpLocationResult>(new GetIpLocation(ip),
-                        timeout: RequestTimeout.After(5));
+                try
+                {
+                    var response =
+                        await client.GetResponse<GetIpLocationResult>(new GetIpLocation(ip),
+                            timeout: RequestTimeout.After(5));
+                    
+                    return TypedResults.Ok(new LocationResourceRepresentation(
+                        response.Message.CountryCode2,
+                        response.Message.CountryCode3,
+                        response.Message.CountryName,
+                        response.Message.City
+                    ));
+                }
+                catch (RequestFaultException)
+                {
+                    return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+                }
 
-                return TypedResults.Ok(new LocationResourceRepresentation(
-                    response.Message.CountryCode2,
-                    response.Message.CountryCode3,
-                    response.Message.CountryName,
-                    response.Message.City
-                ));
+
             });
     }
 }

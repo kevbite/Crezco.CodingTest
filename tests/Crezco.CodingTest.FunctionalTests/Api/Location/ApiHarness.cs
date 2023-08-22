@@ -22,7 +22,7 @@ public sealed class ApiHarness : IRootHarness, IAsyncDisposable
         var httpResponseMessage = await client.GetAsync($"/location?ip={ip}");
 
         var statusCode = httpResponseMessage.StatusCode;
-        var jsonDocument = await httpResponseMessage.Content.ReadFromJsonAsync<JsonDocument>();
+        var jsonDocument = httpResponseMessage.Content.Headers.ContentLength > 0 ? await httpResponseMessage.Content.ReadFromJsonAsync<JsonDocument>() : null;
 
         return (statusCode, jsonDocument);
     }
