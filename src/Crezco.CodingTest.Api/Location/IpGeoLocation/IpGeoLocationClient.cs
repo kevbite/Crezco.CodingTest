@@ -14,7 +14,7 @@ public class IpGeoLocationClient
         _options = options;
     }
 
-    public async Task<IpGeoLocationResponse> GetLocation(IPGeoLocationRequest request)
+    public async Task<IpGeoLocationResponse> GetLocation(IpGeoLocationRequest request)
     {
         var uri = $"/ipgeo?ip={request.IpAddress}&apiKey={_options.Value.ApiKey}";
 

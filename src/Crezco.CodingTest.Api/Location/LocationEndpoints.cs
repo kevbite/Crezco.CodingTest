@@ -17,7 +17,7 @@ public static class LocationEndpoints
                 return Results.Problem("Invalid IP address", statusCode: 400);
             }
 
-            var response = await client.GetLocation(new IPGeoLocationRequest(ip));
+            var response = await client.GetLocation(new IpGeoLocationRequest(ip));
 
             return TypedResults.Ok(new LocationResourceRepresentation(
                 response.CountryCode2,
