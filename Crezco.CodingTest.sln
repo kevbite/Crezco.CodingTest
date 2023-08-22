@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{494DD610-B06C-4593-8D21-F8AF96E2920A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crezco.CodingTest", "src\Crezco.CodingTest.Api\Crezco.CodingTest.Api.csproj", "{360A8C2F-3424-4529-94DC-4FE20CB195E1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C05E7403-67DA-4276-BDC0-59E53F54FB55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crezco.CodingTest.FunctionalTests", "tests\Crezco.CodingTest.FunctionalTests\Crezco.CodingTest.FunctionalTests.csproj", "{987ABFC7-8A72-494E-944A-792454E454C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{360A8C2F-3424-4529-94DC-4FE20CB195E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{360A8C2F-3424-4529-94DC-4FE20CB195E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{360A8C2F-3424-4529-94DC-4FE20CB195E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{360A8C2F-3424-4529-94DC-4FE20CB195E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{987ABFC7-8A72-494E-944A-792454E454C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987ABFC7-8A72-494E-944A-792454E454C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987ABFC7-8A72-494E-944A-792454E454C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987ABFC7-8A72-494E-944A-792454E454C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{360A8C2F-3424-4529-94DC-4FE20CB195E1} = {494DD610-B06C-4593-8D21-F8AF96E2920A}
+		{987ABFC7-8A72-494E-944A-792454E454C6} = {C05E7403-67DA-4276-BDC0-59E53F54FB55}
+	EndGlobalSection
+EndGlobal
