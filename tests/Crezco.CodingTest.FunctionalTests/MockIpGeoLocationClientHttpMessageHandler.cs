@@ -7,29 +7,34 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
 {
     private readonly List<Handler> _handlers = new();
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
         if (_handlers.FirstOrDefault(h => h.Match(request)) is { } handler)
         {
-            return Task.FromResult(handler.Resolve(request));
+            return await handler.Resolve(request);
         }
 
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+        return new HttpResponseMessage(HttpStatusCode.NotFound);
     }
 
-    private void AddHandler(Func<HttpRequestMessage, bool> match, Func<HttpRequestMessage, HttpResponseMessage> handler)
+    private void AddHandler(Func<HttpRequestMessage, bool> match, Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
     {
         _handlers.Add(new Handler(match, handler));
     }
 
-    public void AddSuccessfulIpGeoHandler(string apiKey, string ip, string json)
+    public void AddSuccessfulIpGeoHandler(string apiKey, string ip, string json, TimeSpan timeToRespond)
     {
         AddIpGeoHandler(
             apiKey, ip,
-            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            async _ =>
             {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
+                await Task.Delay(timeToRespond);
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
             });
     }
 
@@ -37,10 +42,10 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
     {
         AddIpGeoHandler(
             apiKey, ip,
-            _ => new HttpResponseMessage(httpStatusCode));
+            _ => Task.FromResult(new HttpResponseMessage(httpStatusCode)));
     }
 
-    private void AddIpGeoHandler(string apiKey, string ip, Func<HttpRequestMessage, HttpResponseMessage> handler)
+    private void AddIpGeoHandler(string apiKey, string ip, Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
     {
         AddHandler(
             request => request.Method == HttpMethod.Get &&
@@ -50,5 +55,5 @@ public class MockIpGeoLocationClientHttpMessageHandler : HttpMessageHandler
             handler);
     }
 
-    sealed record Handler(Func<HttpRequestMessage, bool> Match, Func<HttpRequestMessage, HttpResponseMessage> Resolve);
+    sealed record Handler(Func<HttpRequestMessage, bool> Match, Func<HttpRequestMessage, Task<HttpResponseMessage>> Resolve);
 }

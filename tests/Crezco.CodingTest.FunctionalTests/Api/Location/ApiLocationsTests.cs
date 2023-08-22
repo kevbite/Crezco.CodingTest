@@ -69,6 +69,23 @@ public sealed class ApiLocationsTests : IAsyncLifetime
         
         statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
+    
+    [Fact]
+    public async Task ShouldReturn503ServiceUnavailableWhenUpstreamSystemIsSlow()
+    {
+        var ip = RandomIpAddress.Next();
+
+        var json = new IpGeoLocationIpGeoJsonBuilder()
+            .AddIp(ip)
+            .AddCountry("PE", "PER", "Peru")
+            .AddCity("Lima")
+            .Build();
+        
+        _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json, TimeSpan.FromSeconds(10));
+        var (statusCode, _) = await _harness.GetLocation(ip);
+        
+        statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+    }
 
     public Task InitializeAsync() => Task.CompletedTask;
 

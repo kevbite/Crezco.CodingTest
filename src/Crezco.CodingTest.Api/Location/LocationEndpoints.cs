@@ -23,7 +23,7 @@ public static class LocationEndpoints
                 {
                     var response =
                         await client.GetResponse<GetIpLocationResult>(new GetIpLocation(ip),
-                            timeout: RequestTimeout.After(5));
+                            timeout: RequestTimeout.After(s: 5));
                     
                     return TypedResults.Ok(new LocationResourceRepresentation(
                         response.Message.CountryCode2,
@@ -32,7 +32,7 @@ public static class LocationEndpoints
                         response.Message.City
                     ));
                 }
-                catch (RequestFaultException)
+                catch (RequestException)
                 {
                     return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
                 }
@@ -41,10 +41,3 @@ public static class LocationEndpoints
             });
     }
 }
-
-sealed record LocationResourceRepresentation(
-    string CountryCode2,
-    string CountryCode3,
-    string CountryName,
-    string City
-);

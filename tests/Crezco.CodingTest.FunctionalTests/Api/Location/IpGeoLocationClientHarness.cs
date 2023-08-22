@@ -13,16 +13,21 @@ public class IpGeoLocationClientHarness
     {
         _rootHarness = rootHarness;
     }
-    
+
     public void SeedSuccessfulIpGeoHandler(string ip, string json)
+    {
+        SeedSuccessfulIpGeoHandler(ip, json, TimeSpan.Zero);
+    }
+
+    public void SeedSuccessfulIpGeoHandler(string ip, string json, TimeSpan timeToRespond)
     {
         using var scope = _rootHarness.Services.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<MockIpGeoLocationClientHttpMessageHandler>();
         var config = scope.ServiceProvider.GetRequiredService<IOptions<IpGeoLocationOptions>>();
 
-        handler.AddSuccessfulIpGeoHandler(config.Value.ApiKey, ip, json);
+        handler.AddSuccessfulIpGeoHandler(config.Value.ApiKey, ip, json, timeToRespond);
     }
-    
+
     public void SeedFailedIpGeoHandler(string ip, HttpStatusCode httpStatusCode)
     {
         using var scope = _rootHarness.Services.CreateScope();
