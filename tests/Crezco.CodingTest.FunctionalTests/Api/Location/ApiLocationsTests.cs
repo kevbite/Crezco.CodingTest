@@ -11,7 +11,7 @@ public sealed class ApiLocationsTests : IAsyncLifetime
     {
         _harness = new ApiHarness();
     }
-    
+
     [Fact]
     public async Task ShouldReturn200OkAndCorrectResponseBody()
     {
@@ -26,11 +26,11 @@ public sealed class ApiLocationsTests : IAsyncLifetime
             .AddCountry(countryCode2, countryCode3, countryName)
             .AddCity(city)
             .Build();
-        
+
         _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json);
 
         var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
-        
+
         statusCode.Should().Be(HttpStatusCode.OK);
         jsonDocument!.RootElement.GetProperty("countryCode2").GetString().Should().Be(countryCode2);
         jsonDocument.RootElement.GetProperty("countryCode3").GetString().Should().Be(countryCode3);
@@ -53,23 +53,24 @@ public sealed class ApiLocationsTests : IAsyncLifetime
         jsonDocument.RootElement.GetProperty("status").GetInt32().Should().Be(400);
         jsonDocument.RootElement.GetProperty("detail").GetString().Should().Be("Invalid IP address");
     }
-    
+
     [Theory]
     [InlineData(HttpStatusCode.BadRequest)]
     [InlineData(HttpStatusCode.NotFound)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
     [InlineData(HttpStatusCode.GatewayTimeout)]
-    public async Task ShouldReturn503ServiceUnavailableWhenUpstreamSystemIsUnavailable(HttpStatusCode upstreamSystemStatusCode)
+    public async Task ShouldReturn503ServiceUnavailableWhenUpstreamSystemIsUnavailable(
+        HttpStatusCode upstreamSystemStatusCode)
     {
         var ip = RandomIpAddress.Next();
 
         _harness.IpGeoLocationClient.SeedFailedIpGeoHandler(ip, upstreamSystemStatusCode);
 
         var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
-        
+
         statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
-    
+
     [Fact]
     public async Task ShouldReturn503ServiceUnavailableWhenUpstreamSystemIsSlow()
     {
@@ -80,15 +81,16 @@ public sealed class ApiLocationsTests : IAsyncLifetime
             .AddCountry("PE", "PER", "Peru")
             .AddCity("Lima")
             .Build();
-        
+
         _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json, TimeSpan.FromSeconds(10));
         var (statusCode, _) = await _harness.GetLocation(ip);
-        
+
         statusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
-    
+
     [Fact]
-    public async Task ShouldReturn200OkAndCorrectResponseBodyWhenIpLocationHasBeenPreviouslyCachedAndUpstreamSystemIsUnavailable()
+    public async Task
+        ShouldReturn200OkAndCorrectResponseBodyWhenIpLocationHasBeenPreviouslyCachedAndUpstreamSystemIsUnavailable()
     {
         var ip = RandomIpAddress.Next();
         var countryCode2 = "PE";
@@ -101,13 +103,49 @@ public sealed class ApiLocationsTests : IAsyncLifetime
             .AddCountry(countryCode2, countryCode3, countryName)
             .AddCity(city)
             .Build();
-        
+
         _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json);
         await _harness.GetLocation(ip);
         _harness.IpGeoLocationClient.SeedFailedIpGeoHandler(ip, HttpStatusCode.ServiceUnavailable);
 
         var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
+
+        statusCode.Should().Be(HttpStatusCode.OK);
+        jsonDocument!.RootElement.GetProperty("countryCode2").GetString().Should().Be(countryCode2);
+        jsonDocument.RootElement.GetProperty("countryCode3").GetString().Should().Be(countryCode3);
+        jsonDocument.RootElement.GetProperty("countryName").GetString().Should().Be(countryName);
+        jsonDocument.RootElement.GetProperty("city").GetString().Should().Be(city);
+    }
+
+    [Fact]
+    public async Task
+        ShouldReturn200OkAndCorrectResponseBodyWithLatestWhenIpLocationHasBeenPreviouslyCachedAndUpstreamSystemIsUnavailable()
+    {
+        var ip = RandomIpAddress.Next();
+        _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, new IpGeoLocationIpGeoJsonBuilder()
+            .AddIp(ip)
+            .AddCountry("PE", "PER", "Peru")
+            .AddCity("Lima")
+            .Build());
+        await _harness.GetLocation(ip);
+
+        var countryCode2 = "GB";
+        var countryCode3 = "GBR";
+        var countryName = "United Kingdom of Great Britain and Northern Ireland (the)";
+        var city = "London";
+
+        var json = new IpGeoLocationIpGeoJsonBuilder()
+            .AddIp(ip)
+            .AddCountry(countryCode2, countryCode3, countryName)
+            .AddCity(city)
+            .Build();
+        _harness.IpGeoLocationClient.SeedSuccessfulIpGeoHandler(ip, json);
+        await _harness.GetLocation(ip);
         
+        _harness.IpGeoLocationClient.SeedFailedIpGeoHandler(ip, HttpStatusCode.ServiceUnavailable);
+
+        var (statusCode, jsonDocument) = await _harness.GetLocation(ip);
+
         statusCode.Should().Be(HttpStatusCode.OK);
         jsonDocument!.RootElement.GetProperty("countryCode2").GetString().Should().Be(countryCode2);
         jsonDocument.RootElement.GetProperty("countryCode3").GetString().Should().Be(countryCode3);
